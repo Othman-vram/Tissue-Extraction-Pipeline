@@ -105,25 +105,6 @@ docker run -it --rm \
 ### Fichiers Intermédiaires (pour débogage)
 - `tissue_pyramidal.tiff` : SVS converti en TIFF pyramidal
 - `mask_pyramidal.tiff` : Masque pyramidal généré
-
-## 🎨 Fonctionnalités
-
-- **Suivi de Progression** : Barres de progression en temps réel avec informations de timing
-- **Sortie Console Enrichie** : Interface terminal belle avec mises à jour de statut
-- **Gestion d'Erreurs** : Validation complète et rapport d'erreurs
-- **Efficacité Mémoire** : Traite les grandes images en utilisant des structures pyramidales
-- **Design Modulaire** : Séparation claire des étapes du pipeline
-- **Support de Débogage** : Préserve les fichiers intermédiaires pour analyse
-- **Compatibilité Windows** : Détection automatique des couleurs terminal
-
-## 📊 Performance
-
-Le pipeline affiche automatiquement :
-- Temps de traitement pour chaque étape
-- Comparaisons de taille de fichiers
-- Ratios de compression
-- Optimisation de l'utilisation mémoire
-
 ## 🔧 Détails Techniques
 
 ### Dépendances
@@ -151,75 +132,55 @@ Le pipeline affiche automatiquement :
 L'image est disponible sur Docker Hub :
 
 ```bash
-docker pull votre-username/tissue-extraction-pipeline:latest
+docker push othmanel7/tissue-extraction-pipeline:latest
 ```
 
 ### Construction Locale
 
 ```dockerfile
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:latest
 
-# Copier le fichier d'environnement
-COPY environment.yml /app/
+LABEL maintainer="Tissue Extraction Pipeline"
+LABEL description="Unified pipeline for tissue extraction from whole-slide images"
+
 WORKDIR /app
 
-# Créer l'environnement conda
-RUN conda env create -f environment.yml
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    libglib2.0-dev \
+    libvips-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libwebp-dev \
+    openslide-tools \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copier le script du pipeline
+
+
+COPY environment.yml /app/
+
+
+RUN conda env create -f environment.yml && conda clean -afy
+
+
 COPY unified_tissue_pipeline.py /app/
+COPY README.md /app/
 
-# Activer l'environnement et exécuter
-SHELL ["conda", "run", "-n", "tissue-extraction-pipeline", "/bin/bash", "-c"]
-ENTRYPOINT ["conda", "run", "-n", "tissue-extraction-pipeline", "python", "unified_tissue_pipeline.py"]
+
+RUN mkdir -p /app/input /app/output /app/temp
+
+
+ENV VIPS_CONCURRENCY=4
+ENV VIPS_DISC_THRESHOLD=1gb
+ENV OPENCV_IO_MAX_IMAGE_PIXELS=1073741824
+
+
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "pipeline", "python", "/app/unified_tissue_pipeline.py"]
+
+CMD ["--help"]
 ```
-
-### Docker Compose
-
-```bash
-# Préparer vos fichiers
-mkdir -p data/{input,output,temp}
-cp tissue.svs data/input/
-cp annotations.geojson data/input/
-
-# Exécuter avec variables d'environnement
-SVS_FILE=tissue.svs GEOJSON_FILE=annotations.geojson OUTPUT_FILE=result.tiff docker-compose up
-```
-
-## 🔍 Dépannage
-
-### Problèmes Courants
-
-1. **Erreurs mémoire** : Réduire la variable d'environnement `VIPS_CONCURRENCY`
-2. **Erreurs OpenSlide** : S'assurer que les dépendances système sont installées
-3. **Format GeoJSON** : Vérifier que le GeoJSON contient des features polygon valides
-4. **Permissions de fichiers** : Vérifier l'accès lecture/écriture aux répertoires d'entrée/sortie
-5. **Couleurs Windows** : Le pipeline détecte automatiquement le support des couleurs terminal
-
-### Variables d'Environnement
-
-```bash
-export VIPS_CONCURRENCY=2          # Réduire pour les systèmes à faible mémoire
-export VIPS_DISC_THRESHOLD=500mb   # Ajuster le seuil de cache disque
-export OPENCV_IO_MAX_IMAGE_PIXELS=1073741824  # Taille max d'image
-```
-
-## 📝 Exemple de Flux de Travail
-
-```bash
-# 1. Préparer vos fichiers
-ls -la
-# input.svs          (image de lame entière)
-# annotations.geojson (masque de tissus)
-
-# 2. Exécuter le pipeline
-python unified_tissue_pipeline.py input.svs annotations.geojson extracted_tissue.tiff
-
-# 3. Vérifier les résultats
-ls -la extracted_tissue.tiff
-# TIFF RGBA avec arrière-plan transparent et tissus extraits
-```
-
 ## 🎮 Sélection Interactive des Niveaux
 
 Le pipeline offre une sélection interactive des niveaux pyramidaux :
@@ -242,24 +203,3 @@ Options de Sélection :
 
 Entrer les niveaux pyramidaux à traiter (défaut : tous) : 5,6,7
 ```
-
-## 🤝 Contribution
-
-Ce pipeline combine et étend les fonctionnalités de plusieurs scripts spécialisés :
-- Utilitaires de conversion SVS
-- Génération de masques pyramidaux
-- Extraction avancée de tissus
-
-Lors de contributions, veuillez maintenir la structure modulaire et la gestion complète des erreurs.
-
-## 📄 Licence
-
-Ce projet s'appuie sur des outils d'imagerie médicale existants et suit leurs termes de licence respectifs.
-
-## 🌟 Fonctionnalités Avancées
-
-- **Détection Automatique de Terminal** : S'adapte aux capacités de couleur de votre terminal
-- **Interface Multilingue** : Support français complet
-- **Conteneurisation Complète** : Images Docker prêtes pour la production
-- **Sélection Flexible de Niveaux** : Contrôle précis sur les niveaux pyramidaux à traiter
-- **Optimisation Mémoire** : Gestion intelligente des ressources pour les grandes images
