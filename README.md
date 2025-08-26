@@ -80,12 +80,12 @@ python unified_tissue_pipeline.py \
 
 ```bash
 # Utiliser l'image Docker Hub
-docker run -v /chemin/vers/donnees:/app/input \
-           -v /chemin/vers/sortie:/app/output \
-           votre-username/tissue-extraction-pipeline \
-           /app/input/tissue.svs \
-           /app/input/mask.geojson \
-           /app/output/result.tiff
+docker run -it --rm \
+    -v C:/chemin/complet/vers/vos/fichiers:/app \
+    tissue-extraction-pipeline \
+    <image_entière.svs> \
+    <masque_tissu.geojson> \
+    <tissu_extrait.tiff>
 
 # Ou avec docker-compose
 docker-compose up
