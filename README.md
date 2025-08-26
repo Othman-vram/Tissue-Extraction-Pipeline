@@ -86,9 +86,6 @@ docker run -it --rm \
     <image_entière.svs> \
     <masque_tissu.geojson> \
     <tissu_extrait.tiff>
-
-# Ou avec docker-compose
-docker-compose up
 ```
 
 ### Options de Ligne de Commande
