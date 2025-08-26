@@ -39,11 +39,11 @@ sudo apt-get install libvips-dev openslide-tools
 brew install vips openslide
 ```
 
-### Option 3 : Docker
+### Option 3 : Creation d'un container Docker
 
 ```bash
 # Télécharger depuis Docker Hub
-docker pull votre-username/tissue-extraction-pipeline
+git clone https://github.com/Othman-vram/Tissue-Extraction-Pipeline.git
 
 # Ou construire localement
 docker build -t tissue-extraction-pipeline .
