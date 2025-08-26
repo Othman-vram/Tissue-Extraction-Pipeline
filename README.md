@@ -1,56 +1,66 @@
-# Unified Tissue Extraction Pipeline
+# Pipeline d'Extraction de Tissus Unifié
 
-A comprehensive Python pipeline that combines SVS conversion, mask generation, and tissue extraction into a single automated workflow.
+Un pipeline Python complet qui combine la conversion SVS, la génération de masques et l'extraction de tissus en un seul flux de travail automatisé.
 
-## 🔬 Overview
+## 🔬 Aperçu
 
-This pipeline takes only two inputs:
-1. An `.svs` file (whole-slide image)
-2. A `.geojson` file (tissue annotations/mask)
+Ce pipeline ne nécessite que deux entrées :
+1. Un fichier `.svs` (image de lame entière)
+2. Un fichier `.geojson` (annotations/masque de tissus)
 
-And produces a single **RGBA TIFF** file with extracted tissue regions and transparent background.
+Et produit un seul fichier **TIFF RGBA** avec les régions de tissus extraites et un arrière-plan transparent.
 
-## 🚀 Pipeline Stages
+## 🚀 Étapes du Pipeline
 
-1. **SVS → Pyramidal TIFF**: Converts the input SVS file to a pyramidal TIFF format
-2. **Mask Generation**: Creates a pyramidal binary mask from GeoJSON annotations
-3. **Tissue Extraction**: Extracts tissue regions as RGBA with transparent background
+1. **SVS → TIFF Pyramidal** : Convertit le fichier SVS d'entrée au format TIFF pyramidal
+2. **Génération de Masque** : Crée un masque binaire pyramidal à partir des annotations GeoJSON
+3. **Extraction de Tissus** : Extrait les régions de tissus en RGBA avec arrière-plan transparent
 
 ## 📦 Installation
 
-### Option 1: Conda (Recommended)
+### Option 1 : Conda (Recommandé)
 
 ```bash
-# Create and activate environment
+# Créer et activer l'environnement
 conda env create -f environment.yml
 conda activate tissue-extraction-pipeline
 ```
 
-### Option 2: Pip
+### Option 2 : Pip
 
 ```bash
-# Install Python dependencies
+# Installer les dépendances Python
 pip install -r requirements.txt
 
-# Install system dependencies (Ubuntu/Debian)
+# Installer les dépendances système (Ubuntu/Debian)
 sudo apt-get install libvips-dev openslide-tools
 
-# Install system dependencies (macOS)
+# Installer les dépendances système (macOS)
 brew install vips openslide
 ```
 
-## 🎯 Usage
+### Option 3 : Docker
 
-### Basic Usage
+```bash
+# Télécharger depuis Docker Hub
+docker pull votre-username/tissue-extraction-pipeline
+
+# Ou construire localement
+docker build -t tissue-extraction-pipeline .
+```
+
+## 🎯 Utilisation
+
+### Utilisation de Base
 
 ```bash
 python unified_tissue_pipeline.py input.svs annotations.geojson output_tissue.tiff
 ```
 
-### Advanced Usage
+### Utilisation Avancée
 
 ```bash
-# Specify temporary directory and compression
+# Spécifier le répertoire temporaire et la compression
 python unified_tissue_pipeline.py \
     tissue.svs \
     mask.geojson \
@@ -58,7 +68,7 @@ python unified_tissue_pipeline.py \
     --temp-dir ./temp \
     --compression lzw
 
-# Clean up intermediate files automatically
+# Nettoyer automatiquement les fichiers intermédiaires
 python unified_tissue_pipeline.py \
     tissue.svs \
     mask.geojson \
@@ -66,125 +76,193 @@ python unified_tissue_pipeline.py \
     --no-keep-intermediates
 ```
 
-### Command Line Options
+### Utilisation avec Docker
 
-- `--temp-dir <path>`: Directory for intermediate files (default: system temp)
-- `--no-keep-intermediates`: Delete intermediate files after completion
-- `--compression <type>`: Output compression type (default: lzw)
+```bash
+# Utiliser l'image Docker Hub
+docker run -v /chemin/vers/donnees:/app/input \
+           -v /chemin/vers/sortie:/app/output \
+           votre-username/tissue-extraction-pipeline \
+           /app/input/tissue.svs \
+           /app/input/mask.geojson \
+           /app/output/result.tiff
 
-## 📁 Output Files
+# Ou avec docker-compose
+docker-compose up
+```
 
-### Final Output
-- **RGBA TIFF**: Pyramidal TIFF with extracted tissue
-  - Tissue regions: Opaque (alpha = 255)
-  - Background: Transparent (alpha = 0)
-  - Preserves original pyramid structure
+### Options de Ligne de Commande
 
-### Intermediate Files (for debugging)
-- `tissue_pyramidal.tiff`: Converted SVS as pyramidal TIFF
-- `mask_pyramidal.tiff`: Generated pyramidal mask
+- `--temp-dir <chemin>` : Répertoire pour les fichiers intermédiaires (défaut : temp système)
+- `--no-keep-intermediates` : Supprimer les fichiers intermédiaires après completion
+- `--compression <type>` : Type de compression de sortie (défaut : lzw)
 
-## 🎨 Features
+## 📁 Fichiers de Sortie
 
-- **Progress Tracking**: Real-time progress bars with timing information
-- **Rich Console Output**: Beautiful terminal interface with status updates
-- **Error Handling**: Comprehensive validation and error reporting
-- **Memory Efficient**: Processes large images using pyramidal structures
-- **Modular Design**: Clean separation of pipeline stages
-- **Debugging Support**: Preserves intermediate files for analysis
+### Sortie Finale
+- **TIFF RGBA** : TIFF pyramidal avec tissus extraits
+  - Régions de tissus : Opaques (alpha = 255)
+  - Arrière-plan : Transparent (alpha = 0)
+  - Préserve la structure pyramidale originale
+
+### Fichiers Intermédiaires (pour débogage)
+- `tissue_pyramidal.tiff` : SVS converti en TIFF pyramidal
+- `mask_pyramidal.tiff` : Masque pyramidal généré
+
+## 🎨 Fonctionnalités
+
+- **Suivi de Progression** : Barres de progression en temps réel avec informations de timing
+- **Sortie Console Enrichie** : Interface terminal belle avec mises à jour de statut
+- **Gestion d'Erreurs** : Validation complète et rapport d'erreurs
+- **Efficacité Mémoire** : Traite les grandes images en utilisant des structures pyramidales
+- **Design Modulaire** : Séparation claire des étapes du pipeline
+- **Support de Débogage** : Préserve les fichiers intermédiaires pour analyse
+- **Compatibilité Windows** : Détection automatique des couleurs terminal
 
 ## 📊 Performance
 
-The pipeline automatically displays:
-- Processing time for each stage
-- File size comparisons
-- Compression ratios
-- Memory usage optimization
+Le pipeline affiche automatiquement :
+- Temps de traitement pour chaque étape
+- Comparaisons de taille de fichiers
+- Ratios de compression
+- Optimisation de l'utilisation mémoire
 
-## 🔧 Technical Details
+## 🔧 Détails Techniques
 
-### Dependencies
-- **pyvips**: High-performance image processing
-- **openslide**: Medical image format support
-- **opencv**: Computer vision operations
-- **shapely**: Geometric operations for masks
-- **rich**: Beautiful terminal interface
-- **tifffile**: TIFF format handling
+### Dépendances
+- **pyvips** : Traitement d'images haute performance
+- **openslide** : Support des formats d'images médicales
+- **opencv** : Opérations de vision par ordinateur
+- **shapely** : Opérations géométriques pour les masques
+- **rich** : Interface terminal belle
+- **tifffile** : Gestion du format TIFF
 
-### Image Formats
-- **Input**: SVS (Aperio), TIFF, other OpenSlide-supported formats
-- **Masks**: GeoJSON with polygon/multipolygon geometries
-- **Output**: Pyramidal TIFF with RGBA channels
+### Formats d'Images
+- **Entrée** : SVS (Aperio), TIFF, autres formats supportés par OpenSlide
+- **Masques** : GeoJSON avec géométries polygon/multipolygon
+- **Sortie** : TIFF pyramidal avec canaux RGBA
 
-### Memory Management
-- Processes images in tiles to handle large files
-- Uses pyramidal structures to optimize memory usage
-- Configurable cache settings via environment variables
+### Gestion Mémoire
+- Traite les images par tuiles pour gérer les gros fichiers
+- Utilise des structures pyramidales pour optimiser l'utilisation mémoire
+- Paramètres de cache configurables via variables d'environnement
 
-## 🐳 Docker Support
+## 🐳 Support Docker
 
-The pipeline is designed to be easily containerized:
+### Docker Hub
+
+L'image est disponible sur Docker Hub :
+
+```bash
+docker pull votre-username/tissue-extraction-pipeline:latest
+```
+
+### Construction Locale
 
 ```dockerfile
 FROM continuumio/miniconda3
 
-# Copy environment file
+# Copier le fichier d'environnement
 COPY environment.yml /app/
 WORKDIR /app
 
-# Create conda environment
+# Créer l'environnement conda
 RUN conda env create -f environment.yml
 
-# Copy pipeline script
+# Copier le script du pipeline
 COPY unified_tissue_pipeline.py /app/
 
-# Activate environment and run
+# Activer l'environnement et exécuter
 SHELL ["conda", "run", "-n", "tissue-extraction-pipeline", "/bin/bash", "-c"]
 ENTRYPOINT ["conda", "run", "-n", "tissue-extraction-pipeline", "python", "unified_tissue_pipeline.py"]
 ```
 
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Memory errors**: Reduce `VIPS_CONCURRENCY` environment variable
-2. **OpenSlide errors**: Ensure system dependencies are installed
-3. **GeoJSON format**: Verify GeoJSON contains valid polygon features
-4. **File permissions**: Check read/write access to input/output directories
-
-### Environment Variables
+### Docker Compose
 
 ```bash
-export VIPS_CONCURRENCY=2          # Reduce for low-memory systems
-export VIPS_DISC_THRESHOLD=500mb   # Adjust disk cache threshold
-export OPENCV_IO_MAX_IMAGE_PIXELS=1073741824  # Max image size
+# Préparer vos fichiers
+mkdir -p data/{input,output,temp}
+cp tissue.svs data/input/
+cp annotations.geojson data/input/
+
+# Exécuter avec variables d'environnement
+SVS_FILE=tissue.svs GEOJSON_FILE=annotations.geojson OUTPUT_FILE=result.tiff docker-compose up
 ```
 
-## 📝 Example Workflow
+## 🔍 Dépannage
+
+### Problèmes Courants
+
+1. **Erreurs mémoire** : Réduire la variable d'environnement `VIPS_CONCURRENCY`
+2. **Erreurs OpenSlide** : S'assurer que les dépendances système sont installées
+3. **Format GeoJSON** : Vérifier que le GeoJSON contient des features polygon valides
+4. **Permissions de fichiers** : Vérifier l'accès lecture/écriture aux répertoires d'entrée/sortie
+5. **Couleurs Windows** : Le pipeline détecte automatiquement le support des couleurs terminal
+
+### Variables d'Environnement
 
 ```bash
-# 1. Prepare your files
-ls -la
-# input.svs          (whole-slide image)
-# annotations.geojson (tissue mask)
+export VIPS_CONCURRENCY=2          # Réduire pour les systèmes à faible mémoire
+export VIPS_DISC_THRESHOLD=500mb   # Ajuster le seuil de cache disque
+export OPENCV_IO_MAX_IMAGE_PIXELS=1073741824  # Taille max d'image
+```
 
-# 2. Run the pipeline
+## 📝 Exemple de Flux de Travail
+
+```bash
+# 1. Préparer vos fichiers
+ls -la
+# input.svs          (image de lame entière)
+# annotations.geojson (masque de tissus)
+
+# 2. Exécuter le pipeline
 python unified_tissue_pipeline.py input.svs annotations.geojson extracted_tissue.tiff
 
-# 3. Check results
+# 3. Vérifier les résultats
 ls -la extracted_tissue.tiff
-# RGBA TIFF with transparent background and extracted tissue
+# TIFF RGBA avec arrière-plan transparent et tissus extraits
 ```
 
-## 🤝 Contributing
+## 🎮 Sélection Interactive des Niveaux
 
-This pipeline combines and extends functionality from multiple specialized scripts:
-- SVS conversion utilities
-- Pyramidal mask generation
-- Advanced tissue extraction
+Le pipeline offre une sélection interactive des niveaux pyramidaux :
 
-When contributing, please maintain the modular structure and comprehensive error handling.
+```
+🔍 SÉLECTION DE NIVEAUX
+──────────────────────────────────────────────────
+Niveaux Pyramidaux Disponibles :
+• Niveaux de tissus : 11
+• Niveaux de masque : 9
+• Maximum traitable : 9
+• Indices de niveaux : 0 à 8
 
-## 📄 License
+Options de Sélection :
+• Niveau unique : '0' ou '2'
+• Niveaux multiples : '0,1,2' ou '1,3,5'
+• Plage : '0-3' ou '2-5'
+• Tous les niveaux : appuyer sur Entrée (défaut)
+──────────────────────────────────────────────────
 
-This project builds upon existing medical imaging tools and follows their respective licensing terms.
+Entrer les niveaux pyramidaux à traiter (défaut : tous) : 5,6,7
+```
+
+## 🤝 Contribution
+
+Ce pipeline combine et étend les fonctionnalités de plusieurs scripts spécialisés :
+- Utilitaires de conversion SVS
+- Génération de masques pyramidaux
+- Extraction avancée de tissus
+
+Lors de contributions, veuillez maintenir la structure modulaire et la gestion complète des erreurs.
+
+## 📄 Licence
+
+Ce projet s'appuie sur des outils d'imagerie médicale existants et suit leurs termes de licence respectifs.
+
+## 🌟 Fonctionnalités Avancées
+
+- **Détection Automatique de Terminal** : S'adapte aux capacités de couleur de votre terminal
+- **Interface Multilingue** : Support français complet
+- **Conteneurisation Complète** : Images Docker prêtes pour la production
+- **Sélection Flexible de Niveaux** : Contrôle précis sur les niveaux pyramidaux à traiter
+- **Optimisation Mémoire** : Gestion intelligente des ressources pour les grandes images
